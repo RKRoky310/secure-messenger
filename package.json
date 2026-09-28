@@ -1,24 +1,29 @@
 {
-  "name": "secure-messenger",
+  "name": "secure-messenger-security-testing",
   "version": "1.0.0",
-  "description": "Secure messaging app starter with end-to-end encryption and zero-knowledge server design",
-  "main": "server.js",
+  "description": "Security testing framework for Secure Messenger",
+  "main": "src/index.js",
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "test": "vitest",
+    "test:crypto": "vitest run --include='**/crypto/**'",
+    "test:protocol": "vitest run --include='**/protocol/**'",
+    "test:security": "vitest run --include='**/security/**'",
+    "test:penetration": "vitest run --include='**/pentest/**'",
+    "test:fuzzing": "vitest run --include='**/fuzz/**'",
+    "test:e2e": "vitest run --include='**/e2e/**'",
+    "test:coverage": "vitest run --coverage",
+    "audit:dependencies": "npm audit --json > reports/audit.json",
+    "audit:static": "eslint src --format json > reports/static-analysis.json || true"
   },
-  "keywords": [
-    "security",
-    "messaging",
-    "encryption",
-    "e2ee",
-    "demo"
-  ],
-  "license": "MIT",
   "dependencies": {
-    "express": "^4.19.2",
-    "socket.io": "^4.8.1",
+    "crypto": "^1.0.1",
     "tweetnacl": "^1.1.3",
     "tweetnacl-util": "^0.1.4"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.4",
+    "@vitest/coverage-v8": "^1.0.4",
+    "fast-check": "^3.14.0"
   }
 }

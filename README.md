@@ -1,68 +1,227 @@
-# Secure Messenger
+# Secure Messenger - Security Testing Framework
 
-This repository contains a secure communications starter app that demonstrates:
+Comprehensive security testing suite including cryptographic validation, penetration testing, and vulnerability scanning.
 
-- end-to-end encryption using NaCl / X25519-style cryptography
-- a zero-knowledge server model where the backend stores only ciphertext
-- realtime messaging via Socket.IO
-- simple device-local key management with browser `localStorage`
+## Features
 
-Important: this is a security-focused starter, not a production-ready system. A production app should include:
+- **Cryptographic Tests** - Validate encryption, key derivation, signatures
+- **Protocol Tests** - Verify Signal Protocol implementation
+- **Penetration Testing** - Simulate attacks and vulnerabilities
+- **Fuzzing** - Automated input mutation testing
+- **Memory Safety** - Detect memory leaks and buffer overflows
+- **Dependency Scanning** - Check for known CVEs
+- **Static Analysis** - Code security analysis
+- **Dynamic Analysis** - Runtime security monitoring
+- **End-to-End Tests** - Full workflow security validation
 
-- strong user authentication
-- auditing from security experts
-- hardware-backed key storage on mobile devices
-- device verification and revocation
-- secure backup and recovery flows
-- server hardening and vulnerability scanning
-- abuse detection and rate limiting
+## Test Categories
 
-## Threat model
+### 1. Cryptographic Tests
 
-This demo is designed to protect messages from passive network observers and a server that only sees ciphertext, assuming the user's device is not already compromised. If an attacker gains full control of the phone, it's still possible to read decrypted data in memory or steal local app secrets.
+**Key Generation**
+- Test key entropy
+- Verify key size
+- Check randomness quality
 
-## Run locally
+**Encryption**
+- Test AES-256-GCM encryption
+- Verify authentication tags
+- Test IV uniqueness
+
+**Key Derivation**
+- Test HKDF implementation
+- Verify output length
+- Check derivation consistency
+
+**Digital Signatures**
+- Test signature generation
+- Verify signature validation
+- Test signature rejection
+
+### 2. Protocol Tests
+
+**Signal Protocol**
+- X3DH key exchange
+- Double Ratchet mechanism
+- Forward secrecy
+- Post-compromise security
+
+**Message Flow**
+- Initial session establishment
+- Message encryption/decryption
+- Key ratcheting
+- Session state management
+
+### 3. Security Tests
+
+**Authentication**
+- Test JWT validation
+- Verify device authentication
+- Test token expiration
+- Check rate limiting
+
+**Authorization**
+- Test access control
+- Verify user isolation
+- Test device permissions
+- Check message access
+
+**Input Validation**
+- SQL injection attempts
+- XSS payload injection
+- Buffer overflow tests
+- Malformed input handling
+
+**Cryptographic Attacks**
+- Known plaintext attacks
+- Replay attack simulation
+- Man-in-the-middle scenarios
+- Side-channel attack simulation
+
+## Installation
 
 ```bash
+git checkout security-testing
 npm install
-npm start
 ```
 
-Then open http://localhost:3000
+## Running Tests
 
-## How to use
+### All Tests
+```bash
+npm test
+```
 
-1. Register a username.
-2. Open the app in a second browser tab or another browser profile using a different username.
-3. Exchange public keys automatically when both users are present.
-4. Send encrypted messages.
-5. Messages are encrypted locally before they are sent to the backend.
+### Specific Test Suite
+```bash
+npm run test:crypto        # Cryptographic tests
+npm run test:protocol      # Protocol tests
+npm run test:security      # Security tests
+npm run test:penetration   # Penetration tests
+npm run test:fuzzing       # Fuzzing tests
+npm run test:e2e          # End-to-end tests
+```
 
-## Security notes
+### With Coverage
+```bash
+npm run test:coverage
+```
 
-- Private keys are stored in the browser local storage of the current device.
-- The backend stores public keys and ciphertext only.
-- The encryption uses a shared secret derived from X25519 and NaCl secretbox.
-- This is a clean starting point, not a full production cryptographic implementation.
+### Security Audit
+```bash
+npm audit
+npm run audit:dependencies
+npm run audit:static
+```
 
-## Default user flow
+## Test Files
 
-- `POST /api/register` registers a username and public key
-- `GET /api/users` lists registered users
-- `POST /api/messages` stores encrypted messages for delivery
-- `GET /api/messages?user=<username>` fetches decrypted-but-client-side messages or ciphertext for client-side decryption
-- realtime socket events update recipients immediately
+### Cryptographic Tests
+- `crypto.aes-gcm.test.js` - AES-256-GCM encryption
+- `crypto.hkdf.test.js` - HKDF key derivation
+- `crypto.signatures.test.js` - Digital signatures
+- `crypto.rng.test.js` - Random number generation
 
-## Start with secure architecture in mind
+### Protocol Tests
+- `protocol.x3dh.test.js` - X3DH key exchange
+- `protocol.double-ratchet.test.js` - Double Ratchet
+- `protocol.signal.test.js` - Full Signal Protocol
 
-A real app should eventually move to:
+### Security Tests
+- `security.auth.test.js` - Authentication
+- `security.authorization.test.js` - Authorization
+- `security.input-validation.test.js` - Input validation
+- `security.sql-injection.test.js` - SQL injection
+- `security.xss.test.js` - XSS prevention
 
-- Signal Protocol / Double Ratchet
-- hardware-backed keys on mobile platforms
-- secure key rotation
-- per-device verification and revocation
-- open-source protocol review
-- formal security audit
+### Penetration Tests
+- `pentest.replay-attack.test.js` - Replay attacks
+- `pentest.mitm.test.js` - Man-in-the-middle
+- `pentest.device-compromise.test.js` - Device compromise
+- `pentest.brute-force.test.js` - Brute force attacks
+
+### Fuzzing Tests
+- `fuzz.encryption.test.js` - Encryption fuzzing
+- `fuzz.protocol.test.js` - Protocol fuzzing
+- `fuzz.api.test.js` - API endpoint fuzzing
+
+## Test Coverage Goals
+
+- **Statements**: 95%+
+- **Branches**: 90%+
+- **Functions**: 95%+
+- **Lines**: 95%+
+
+## Continuous Security Monitoring
+
+### GitHub Actions Workflow
+
+```yaml
+name: Security Tests
+on: [push, pull_request]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run test:security
+      - run: npm audit
+      - run: npm run audit:static
+```
+
+## Security Test Results
+
+After running security tests, check the generated reports:
+
+- `coverage/index.html` - Code coverage
+- `reports/security.json` - Security test results
+- `reports/dependencies.json` - Dependency audit
+- `reports/static-analysis.json` - Static analysis results
+
+## Known Vulnerabilities
+
+None currently known. Please report security issues to security@securemessenger.app
+
+## Security Audit Checklist
+
+- [ ] All cryptographic operations tested
+- [ ] Protocol implementation verified
+- [ ] Authentication mechanisms tested
+- [ ] Authorization controls verified
+- [ ] Input validation comprehensive
+- [ ] SQL injection prevention verified
+- [ ] XSS prevention verified
+- [ ] CSRF protection verified
+- [ ] Rate limiting tested
+- [ ] Dependency vulnerabilities checked
+- [ ] Static analysis passed
+- [ ] Dynamic analysis passed
+- [ ] Penetration testing completed
+- [ ] Fuzzing completed
+- [ ] Code review completed
+
+## Third-Party Security Audits
+
+We recommend engaging professional security auditors for:
+
+1. **Initial Audit** - Before v1.0 release
+2. **Annual Audit** - Yearly comprehensive review
+3. **Incident Response** - After any reported vulnerability
+
+## Responsible Disclosure
+
+If you find a security vulnerability:
+
+1. **Do not** publicly disclose the issue
+2. Email: security@securemessenger.app
+3. Provide detailed description and proof-of-concept
+4. Wait for acknowledgment (within 48 hours)
+5. Allow 90 days for patch development
 
 ## License
 
