@@ -1,24 +1,33 @@
 {
-  "name": "secure-messenger",
+  "name": "secure-messenger-webapp",
   "version": "1.0.0",
-  "description": "Secure messaging app starter with end-to-end encryption and zero-knowledge server design",
-  "main": "server.js",
+  "description": "Production-grade end-to-end encrypted messaging webapp",
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:crypto": "vitest run src/crypto",
+    "test:e2e": "playwright test",
+    "lint": "eslint src",
+    "type-check": "tsc --noEmit"
   },
-  "keywords": [
-    "security",
-    "messaging",
-    "encryption",
-    "e2ee",
-    "demo"
-  ],
-  "license": "MIT",
   "dependencies": {
-    "express": "^4.19.2",
-    "socket.io": "^4.8.1",
-    "tweetnacl": "^1.1.3",
-    "tweetnacl-util": "^0.1.4"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@signal/libsignal-client": "^0.31.0",
+    "qrcode.react": "^1.0.1",
+    "socket.io-client": "^4.8.1",
+    "dexie": "^4.0.0",
+    "axios": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.0",
+    "vitest": "^1.2.0",
+    "@playwright/test": "^1.41.0"
   }
 }
