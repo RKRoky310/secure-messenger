@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Secure Messenger</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <h1>Secure Messenger</h1>
+          <p>Zero-knowledge starter</p>
+        </div>
+
+        <div class="panel">
+          <h2>Identity</h2>
+          <label>
+            Username
+            <input id="usernameInput" type="text" placeholder="alice" />
+          </label>
+          <button id="registerBtn">Register</button>
+        </div>
+
+        <div class="panel">
+          <h2>Users</h2>
+          <div id="userList" class="user-list"></div>
+        </div>
+      </aside>
+
+      <main class="chat-panel">
+        <header class="chat-header">
+          <div>
+            <h2 id="chatTitle">Select a user</h2>
+            <small>End-to-end encrypted channel</small>
+          </div>
+        </header>
+
+        <section id="messages" class="messages"></section>
+
+        <form id="messageForm" class="composer">
+          <input id="messageInput" type="text" placeholder="Type a secure message" autocomplete="off" />
+          <button type="submit">Send</button>
+        </form>
+      </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

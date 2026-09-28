@@ -1,0 +1,24 @@
+{
+  "name": "secure-messenger",
+  "version": "1.0.0",
+  "description": "Secure messaging app starter with end-to-end encryption and zero-knowledge server design",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "security",
+    "messaging",
+    "encryption",
+    "e2ee",
+    "demo"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.8.1",
+    "tweetnacl": "^1.1.3",
+    "tweetnacl-util": "^0.1.4"
+  }
+}
