@@ -1,24 +1,23 @@
 {
-  "name": "secure-messenger",
+  "name": "secure-messenger-device-management",
   "version": "1.0.0",
-  "description": "Secure messaging app starter with end-to-end encryption and zero-knowledge server design",
-  "main": "server.js",
+  "description": "Multi-device management with cryptographic binding and verification",
+  "main": "src/index.js",
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "test": "vitest",
+    "test:devices": "vitest run src/tests/device.test.js",
+    "test:verification": "vitest run src/tests/verification.test.js",
+    "test:recovery": "vitest run src/tests/recovery.test.js"
   },
-  "keywords": [
-    "security",
-    "messaging",
-    "encryption",
-    "e2ee",
-    "demo"
-  ],
-  "license": "MIT",
   "dependencies": {
-    "express": "^4.19.2",
-    "socket.io": "^4.8.1",
+    "crypto": "^1.0.1",
+    "qrcode": "^1.5.3",
+    "uuid": "^9.0.1",
     "tweetnacl": "^1.1.3",
     "tweetnacl-util": "^0.1.4"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.4"
   }
 }
