@@ -1,68 +1,208 @@
-# Secure Messenger
+# Secure Messenger - iOS
 
-This repository contains a secure communications starter app that demonstrates:
+Production-grade encrypted messaging app for iOS with Signal Protocol, Secure Enclave, and biometric authentication.
 
-- end-to-end encryption using NaCl / X25519-style cryptography
-- a zero-knowledge server model where the backend stores only ciphertext
-- realtime messaging via Socket.IO
-- simple device-local key management with browser `localStorage`
+## Features
 
-Important: this is a security-focused starter, not a production-ready system. A production app should include:
+- **Signal Protocol** - Double Ratchet with forward secrecy
+- **Secure Enclave** - Hardware-backed key storage
+- **Face ID / Touch ID** - Biometric authentication
+- **End-to-End Encryption** - All messages encrypted client-side
+- **Device Verification** - QR code scanning
+- **Secure Backup** - iCloud Keychain integration
+- **Real-time Messaging** - WebSocket for instant delivery
+- **Offline Support** - Core Data with automatic sync
+- **Screen Security** - Privacy screen when backgrounded
 
-- strong user authentication
-- auditing from security experts
-- hardware-backed key storage on mobile devices
-- device verification and revocation
-- secure backup and recovery flows
-- server hardening and vulnerability scanning
-- abuse detection and rate limiting
+## Architecture
 
-## Threat model
+### Tech Stack
+- Swift 5.9+
+- SwiftUI for UI
+- Combine for reactive programming
+- Core Data for local storage
+- CryptoKit for cryptographic operations
+- libsignal for Signal Protocol
+- URLSession for networking
 
-This demo is designed to protect messages from passive network observers and a server that only sees ciphertext, assuming the user's device is not already compromised. If an attacker gains full control of the phone, it's still possible to read decrypted data in memory or steal local app secrets.
+### Security Stack
+- Secure Enclave for key storage
+- LocalAuthentication for biometrics
+- CryptoKit (Apple's cryptography framework)
+- TLS 1.3 with certificate pinning
+- App Transport Security (ATS) hardening
 
-## Run locally
+## Project Structure
 
-```bash
-npm install
-npm start
+```
+SecureMessenger/
+├── App/
+│   └── SecureMessengerApp.swift
+├── Features/
+│   ├── Auth/
+│   │   ├── Views/
+│   │   ├── ViewModels/
+│   │   └── Models/
+│   ├── Chat/
+│   │   ├── Views/
+│   │   ├── ViewModels/
+│   │   └── Models/
+│   └── Settings/
+│       ├── Views/
+│       └── ViewModels/
+├── Services/
+│   ├── CryptoService.swift
+│   ├── KeychainService.swift
+│   ├── DatabaseService.swift
+│   └── APIService.swift
+├── Models/
+├── Utilities/
+└── Resources/
 ```
 
-Then open http://localhost:3000
+## Installation
 
-## How to use
+### Prerequisites
+- Xcode 15.0+
+- iOS 15.0+
+- Swift 5.9+
 
-1. Register a username.
-2. Open the app in a second browser tab or another browser profile using a different username.
-3. Exchange public keys automatically when both users are present.
-4. Send encrypted messages.
-5. Messages are encrypted locally before they are sent to the backend.
+### Development Setup
 
-## Security notes
+1. Clone repository
+2. Open `SecureMessenger.xcodeproj`
+3. Select target and run on simulator or device
 
-- Private keys are stored in the browser local storage of the current device.
-- The backend stores public keys and ciphertext only.
-- The encryption uses a shared secret derived from X25519 and NaCl secretbox.
-- This is a clean starting point, not a full production cryptographic implementation.
+## Security Model
 
-## Default user flow
+### Threat Model
 
-- `POST /api/register` registers a username and public key
-- `GET /api/users` lists registered users
-- `POST /api/messages` stores encrypted messages for delivery
-- `GET /api/messages?user=<username>` fetches decrypted-but-client-side messages or ciphertext for client-side decryption
-- realtime socket events update recipients immediately
+**Protected against:**
+- Network eavesdropping (TLS 1.3 + certificate pinning)
+- Server compromise (E2EE)
+- Passive traffic analysis
+- Unauthorized app access (biometric + device passcode)
+- Database theft (encrypted with device key)
 
-## Start with secure architecture in mind
+**Not protected against:**
+- Jailbroken device
+- Physical theft (if device is unlocked)
+- Malware with system privileges
 
-A real app should eventually move to:
+### Key Storage
 
-- Signal Protocol / Double Ratchet
-- hardware-backed keys on mobile platforms
-- secure key rotation
-- per-device verification and revocation
-- open-source protocol review
-- formal security audit
+1. **Identity Keys** - Stored in Secure Enclave
+   - Protected by device passcode
+   - Requires biometric unlock
+   - Never leaves the enclave
+
+2. **Message Keys** - Derived on-the-fly
+   - Never stored in plaintext
+   - Protected by Signal Protocol ratchet
+
+3. **Backup Keys** - User-controlled passphrase
+   - Encrypted with PBKDF2-SHA256
+   - Zero-knowledge backup
+
+### Encryption Flow
+
+```
+┌─────────────────────────────┐
+│ User Types Message           │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│ Signal Protocol Ratchet      │
+│ (Derives ephemeral key)      │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│ CryptoKit AES-256-GCM        │
+│ (Authenticated encryption)   │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│ TLS 1.3 Transport            │
+│ (Network encryption)         │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│ Server (sees only ciphertext)│
+└─────────────────────────────┘
+```
+
+## Configuration
+
+Create `Config.xcconfig`:
+```xcconfig
+API_BASE_URL = https://api.securemessenger.app
+API_TIMEOUT = 30
+CERTIFICATE_PINS = SHA256/abcd1234...
+```
+
+## Development
+
+### Running Tests
+```bash
+# Unit tests
+xcodebuild test -scheme SecureMessenger
+
+# UI tests
+xcodebuild test -scheme SecureMessenger -destination 'platform=iOS Simulator,name=iPhone 15'
+```
+
+### Code Quality
+```bash
+# SwiftLint
+swiftlint lint --fix
+
+# Format
+swiftformat .
+```
+
+## API Integration
+
+The app communicates with the backend via REST API with WebSocket upgrade:
+
+- `POST /auth/register` - Register device
+- `POST /auth/login` - Device authentication
+- `GET /messages` - Fetch encrypted messages
+- `POST /messages` - Send encrypted message
+- `WS /ws` - Real-time message delivery
+
+## Security Checklist
+
+- [ ] Enable Code Signing
+- [ ] Set up Team ID and Bundle Identifier
+- [ ] Verify Secure Enclave usage
+- [ ] Enable data protection (NSFileProtectionComplete)
+- [ ] Verify biometric fallback
+- [ ] Test on real device
+- [ ] Run Security framework audits
+- [ ] Check for hardcoded secrets
+- [ ] Verify TLS certificate pinning
+- [ ] Test app in background
+- [ ] Verify Keychain access control
+
+## Release Build
+
+1. Update version in `Info.plist`
+2. Archive: `xcodebuild archive -scheme SecureMessenger`
+3. Export and sign
+4. Upload to TestFlight or App Store
+
+## Privacy & Security
+
+- App **never** stores plaintext messages
+- **All** encryption happens on-device
+- **No** location tracking
+- **No** analytics of message content
+- **No** third-party ad networks
+- **No** background data collection
 
 ## License
 
