@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Secure Messenger</string>
+    <string name="unlock_prompt">Unlock Secure Messenger</string>
+    <string name="message_hint">Type a message...</string>
+    <string name="send_button">Send</string>
+</resources>

@@ -1,68 +1,199 @@
-# Secure Messenger
+# Secure Messenger - Android
 
-This repository contains a secure communications starter app that demonstrates:
+Production-grade encrypted messaging app for Android with Signal Protocol, hardware-backed keys, and device verification.
 
-- end-to-end encryption using NaCl / X25519-style cryptography
-- a zero-knowledge server model where the backend stores only ciphertext
-- realtime messaging via Socket.IO
-- simple device-local key management with browser `localStorage`
+## Features
 
-Important: this is a security-focused starter, not a production-ready system. A production app should include:
+- **Signal Protocol** - Double Ratchet with forward secrecy
+- **Hardware-Backed Keys** - Android Keystore for private key storage
+- **Biometric Authentication** - Face/fingerprint unlock
+- **End-to-End Encryption** - All messages encrypted client-side
+- **Device Verification** - QR code scanning for peer verification
+- **Secure Backup** - User-controlled encrypted backups
+- **Real-time Messaging** - WebSocket for instant delivery
+- **Offline Support** - Local SQLite database with automatic sync
+- **Screen Security** - Prevent screenshots and screen recording
 
-- strong user authentication
-- auditing from security experts
-- hardware-backed key storage on mobile devices
-- device verification and revocation
-- secure backup and recovery flows
-- server hardening and vulnerability scanning
-- abuse detection and rate limiting
+## Architecture
 
-## Threat model
+### Tech Stack
+- Kotlin (100% Kotlin codebase)
+- Jetpack Compose for UI
+- Room Database with encryption (SQLCipher)
+- Tink for cryptographic operations
+- libsignal (Signal Protocol library)
+- Coroutines for async operations
+- MVVM + Repository pattern
 
-This demo is designed to protect messages from passive network observers and a server that only sees ciphertext, assuming the user's device is not already compromised. If an attacker gains full control of the phone, it's still possible to read decrypted data in memory or steal local app secrets.
+### Security Stack
+- Android Keystore System (hardware-backed when available)
+- Biometric API for authentication
+- TLS 1.3 for network communication
+- SQLCipher for database encryption
+- EncryptedSharedPreferences for app settings
 
-## Run locally
+## Project Structure
 
-```bash
-npm install
-npm start
+```
+app/src/main/kotlin/com/securemessenger/
+├── ui/                    # Jetpack Compose UI
+│   ├── auth/             # Authentication screens
+│   ├── chat/             # Chat screens
+│   ├── contacts/         # Contacts list
+│   └── settings/         # Settings
+├── data/
+│   ├── local/            # Room database
+│   ├── remote/           # API client
+│   └── repository/       # Repository pattern
+├── domain/
+│   ├── model/            # Data classes
+│   ├── usecase/          # Business logic
+│   └── repository/       # Repository interfaces
+├── crypto/               # Cryptographic operations
+├── security/             # Security utilities
+└── MainActivity.kt
 ```
 
-Then open http://localhost:3000
+## Installation
 
-## How to use
+### Prerequisites
+- Android Studio 2023.1+
+- Android SDK 31+
+- Kotlin 1.9+
 
-1. Register a username.
-2. Open the app in a second browser tab or another browser profile using a different username.
-3. Exchange public keys automatically when both users are present.
-4. Send encrypted messages.
-5. Messages are encrypted locally before they are sent to the backend.
+### Build
+```bash
+./gradlew build
+```
 
-## Security notes
+### Run
+```bash
+./gradlew installDebug
+```
 
-- Private keys are stored in the browser local storage of the current device.
-- The backend stores public keys and ciphertext only.
-- The encryption uses a shared secret derived from X25519 and NaCl secretbox.
-- This is a clean starting point, not a full production cryptographic implementation.
+## Security Model
 
-## Default user flow
+### Threat Model
 
-- `POST /api/register` registers a username and public key
-- `GET /api/users` lists registered users
-- `POST /api/messages` stores encrypted messages for delivery
-- `GET /api/messages?user=<username>` fetches decrypted-but-client-side messages or ciphertext for client-side decryption
-- realtime socket events update recipients immediately
+**Protected against:**
+- Network eavesdropping (TLS 1.3)
+- Server compromise (E2EE)
+- Passive traffic analysis
+- Unauthorized app access (biometric + device lock)
+- Database theft (encrypted with device key)
 
-## Start with secure architecture in mind
+**Not protected against:**
+- Compromised device OS (rooted/jailbroken)
+- Physical theft (if device is unlocked)
+- Malware with system privileges
 
-A real app should eventually move to:
+### Key Storage
 
-- Signal Protocol / Double Ratchet
-- hardware-backed keys on mobile platforms
-- secure key rotation
-- per-device verification and revocation
-- open-source protocol review
-- formal security audit
+1. **Identity Keys** - Stored in Android Keystore
+   - Hardware-backed when possible
+   - Requires biometric/device authentication
+
+2. **Message Keys** - Derived on-the-fly
+   - Never stored in plaintext
+   - Protected by Signal Protocol ratchet
+
+3. **Backup Keys** - User-controlled passphrase
+   - Encrypted with PBKDF2
+   - Zero-knowledge backup system
+
+### Encryption Flow
+
+```
+┌─────────────────────────────────────┐
+│ User Types Message                  │
+└────────────────┬────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────┐
+│ Signal Protocol Ratchet             │
+│ (Derives ephemeral message key)     │
+└────────────────┬────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────┐
+│ Tink AES-256-GCM Encryption         │
+│ (Authenticated encryption)          │
+└────────────────┬────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────┐
+│ TLS 1.3 Transport                   │
+│ (Network encryption)                │
+└────────────────┬────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────┐
+│ Server (sees only ciphertext)       │
+└─────────────────────────────────────┘
+```
+
+## Configuration
+
+Create `local.properties`:
+```properties
+sdk.dir=/path/to/android/sdk
+API_BASE_URL=https://api.securemessenger.app
+API_TIMEOUT=30
+```
+
+## Development
+
+### Running Tests
+```bash
+# Unit tests
+./gradlew test
+
+# Android tests
+./gradlew connectedAndroidTest
+
+# Security tests
+./gradlew test -k CryptoTest
+```
+
+### Code Quality
+```bash
+# Lint
+./gradlew lint
+
+# Format
+./gradlew ktlintFormat
+```
+
+## API Integration
+
+The app communicates with the backend via REST API with WebSocket upgrade:
+
+- `POST /auth/register` - Register device
+- `POST /auth/login` - Device authentication
+- `GET /messages` - Fetch encrypted messages
+- `POST /messages` - Send encrypted message
+- `WS /ws` - Real-time message delivery
+
+## Security Checklist
+
+- [ ] Compile with minify enabled
+- [ ] Sign release APK with production key
+- [ ] Enable ProGuard/R8 rules for crypto libs
+- [ ] Test on real device with security patches
+- [ ] Verify hardware keystore usage (logcat check)
+- [ ] Test backup/restore flow
+- [ ] Verify biometric fallback
+- [ ] Check for hardcoded secrets
+- [ ] Run security scanner (MobSF)
+- [ ] Verify TLS certificate pinning
+
+## Release Build
+
+```bash
+./gradlew bundleRelease
+```
+
+This generates `app/build/outputs/bundle/release/app-release.aab`
 
 ## License
 
